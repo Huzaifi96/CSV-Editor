@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget, QAction
-
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction
+from dialog import createNewTableDialog
 
 class MainWindow(QMainWindow):
     """
@@ -25,6 +25,7 @@ class MainWindow(QMainWindow):
         fileMenu = menuBar.addMenu('File')
 
         newAction = QAction('New', self)
+        newAction.triggered.connect(self.open_create_new_table_dialog)
         openAction = QAction('Open..',self)
 
         fileMenu.addAction(newAction)
@@ -32,17 +33,28 @@ class MainWindow(QMainWindow):
 
         # Create an instance of QTableWidget
         self.table_widget = QTableWidget()
-
-        # Set the number of rows and columns based on the data
-        self.table_widget.setRowCount(4)
-        self.table_widget.setColumnCount(3)
         
         # Set the horizontal headers (column names)
-        self.table_widget.setHorizontalHeaderLabels(["Column1", "Column2", "Column3"])
+        # self.table_widget.setHorizontalHeaderLabels(["Column1", "Column2", "Column3"])
 
         # Add the table to the layout
         layout.addWidget(self.table_widget)
+    
+    def open_create_new_table_dialog(self):
+        # create instance of createNewTableDialog
+        self.createTable_window = createNewTableDialog()
 
+        # Connect the dialog's custom signal to slot in the main window
+        self.createTable_window.get_dimension.connect(self.create_new_table)
+
+        # Show the dialog as a modal window. This will block execution until it's closed.
+        self.createTable_window.exec_()
+
+    def create_new_table(self,rows,columns):
+
+        # This slot will be automatically called when get_dimension signal is emit
+        self.table_widget.setRowCount(rows)
+        self.table_widget.setColumnCount(columns)
 
 # The application entry point
 if __name__ == '__main__':

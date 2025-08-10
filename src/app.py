@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction
-from dialog import createNewTableDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction,QMenu
+from dialog import createNewTableDialog, openFileDialog
 
 class MainWindow(QMainWindow):
     """
@@ -20,16 +20,26 @@ class MainWindow(QMainWindow):
         # Create a layout for the central widget
         layout = QVBoxLayout(central_widget)
         
-        # Create Menus
         menuBar = self.menuBar()
+
+        # Create File Menus
         fileMenu = menuBar.addMenu('File')
 
         newAction = QAction('New', self)
         newAction.triggered.connect(self.open_create_new_table_dialog)
+
         openAction = QAction('Open..',self)
+        openAction.triggered.connect(self.open_file_dialog)
 
         fileMenu.addAction(newAction)
         fileMenu.addAction(openAction)
+
+        # Create Edit Menus
+        editMenu = menuBar.addMenu('Edit')
+        insertSubMenu = QMenu('Insert',self)
+        horizontalHeader = QAction('Insert Horizontal Header',self)
+        insertSubMenu.addAction(horizontalHeader)
+        editMenu.addMenu(insertSubMenu)
 
         # Create an instance of QTableWidget
         self.table_widget = QTableWidget()
@@ -55,6 +65,11 @@ class MainWindow(QMainWindow):
         # This slot will be automatically called when get_dimension signal is emit
         self.table_widget.setRowCount(rows)
         self.table_widget.setColumnCount(columns)
+    
+    def open_file_dialog(self):
+
+        openFile = openFileDialog()
+        openFile.open_file()
 
 # The application entry point
 if __name__ == '__main__':

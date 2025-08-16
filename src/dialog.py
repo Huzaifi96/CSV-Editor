@@ -79,6 +79,7 @@ class insertHorizontalHeaderDialog(QDialog):
 
     def __init__(self,num_colums):
         super().__init__()
+        self.setWindowTitle("Insert Horizontal Header")
         self.num_colums = num_colums
         self.header_inputs = []
         self.initUI()

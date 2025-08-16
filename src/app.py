@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction,QMenu
-from dialog import createNewTableDialog, openFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox
+from dialog import createNewTableDialog, openFileDialog,insertHorizontalHeaderDialog
 
 class MainWindow(QMainWindow):
     """
@@ -13,6 +13,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("CSV-Editor")
         self.setGeometry(100, 100, 500, 300)
 
+        # initialize variable
+        self.table_row = 0
+        self.table_column = 0
+        self._table_exists = False
+        # initialize UI
+        self.initUI()
+
+    def initUI(self):
         # Create a central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -35,11 +43,14 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(openAction)
 
         # Create Edit Menus
-        editMenu = menuBar.addMenu('Edit')
-        insertSubMenu = QMenu('Insert',self)
-        horizontalHeader = QAction('Insert Horizontal Header',self)
-        insertSubMenu.addAction(horizontalHeader)
-        editMenu.addMenu(insertSubMenu)
+        self.editMenu = menuBar.addMenu('Edit')
+        self.insertSubMenu = QMenu('Insert',self)
+        self.horizontalHeader = QAction('Insert Horizontal Header',self)
+        self.horizontalHeader.setEnabled(self._table_exists)
+        self.horizontalHeader.triggered.connect(self.insert_horizontal_header_dialog)
+
+        self.insertSubMenu.addAction(self.horizontalHeader)
+        self.editMenu.addMenu(self.insertSubMenu)
 
         # Create an instance of QTableWidget
         self.table_widget = QTableWidget()
@@ -50,6 +61,10 @@ class MainWindow(QMainWindow):
         # Add the table to the layout
         layout.addWidget(self.table_widget)
     
+    def _enable_action(self,enable_flag):
+        
+        self.horizontalHeader.setEnabled(enable_flag)
+
     def open_create_new_table_dialog(self):
         # create instance of createNewTableDialog
         self.createTable_window = createNewTableDialog()
@@ -60,16 +75,35 @@ class MainWindow(QMainWindow):
         # Show the dialog as a modal window. This will block execution until it's closed.
         self.createTable_window.exec_()
 
+        # enable table exist flags and action menus
+        self._table_exists = True
+        self._enable_action(self._table_exists)
+
     def create_new_table(self,rows,columns):
 
         # This slot will be automatically called when get_dimension signal is emit
         self.table_widget.setRowCount(rows)
         self.table_widget.setColumnCount(columns)
+        # update current number of rows and column in the main windows
+        self.table_row = rows
+        self.table_column = columns
     
     def open_file_dialog(self):
 
         openFile = openFileDialog()
         openFile.open_file()
+
+    def insert_horizontal_header_dialog(self):
+        dialog = insertHorizontalHeaderDialog(self.table_column)
+
+        result = dialog.exec_()
+
+        if result == QDialog.Accepted:
+            headers = dialog.getHeaders()
+            self.table_widget.setHorizontalHeaderLabels(headers)
+            QMessageBox.information(self,"Headers Entered","Successfully set headers")
+        else:
+            QMessageBox.information(self, "Cancelled","Header input cancelled")
 
 # The application entry point
 if __name__ == '__main__':

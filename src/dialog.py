@@ -1,4 +1,4 @@
-from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog, QTableWidget
+from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog,QVBoxLayout,QFormLayout,QLineEdit, QDialogButtonBox
 from PyQt5.QtCore import Qt, QRect,pyqtSignal
 from PyQt5.QtGui import  QFont
 
@@ -12,9 +12,9 @@ class createNewTableDialog(QDialog):
         self.setWindowTitle("Create New Table")
         # self.setGeometry(0, 0, 407, 319)
         self.resize(280, 237)
-        self.init_ui()
+        self.initUI()
     
-    def init_ui(self):
+    def initUI(self):
         
         font = QFont()
         font.setPointSize(12)
@@ -76,6 +76,40 @@ class openFileDialog(QFileDialog):
                 print(f"Error opening file: {e}")
 
 class insertHorizontalHeaderDialog(QDialog):
-    pass
+
+    def __init__(self,num_colums):
+        super().__init__()
+        self.num_colums = num_colums
+        self.header_inputs = []
+        self.initUI()
     
+    def initUI(self):
+        dialog_layout = QVBoxLayout(self)
+
+        form_layout = QFormLayout(self)
+        form_layout.setContentsMargins(20,20,20,20)
+
+        for i in range(self.num_colums):
+            textLabel = QLabel(f" Column {i} Header : ")
+            lineEdit = QLineEdit()
+            self.header_inputs.append(lineEdit)
+            form_layout.addRow(textLabel,lineEdit)
+
+        dialog_layout.addLayout(form_layout)
+
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        dialog_layout.addWidget(self.buttonBox)
+        self.setLayout(dialog_layout)
+        self.setMinimumWidth(350)
+
+    def getHeaders(self) -> list:
+
+        headers = []
+        for input in self.header_inputs:
+            headers.append(input.text().strip())
+
+        return headers
 

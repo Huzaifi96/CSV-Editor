@@ -108,9 +108,5 @@ class insertHorizontalHeaderDialog(QDialog):
 
     def getHeaders(self) -> list:
 
-        headers = []
-        for input in self.header_inputs:
-            headers.append(input.text().strip())
-
-        return headers
+        return [input.text().strip() for input in self.header_inputs]
 

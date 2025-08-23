@@ -1,6 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox
 from dialog import createNewTableDialog, openFileDialog,insertHorizontalHeaderDialog
+from widget import BlankTableWidget
 
 class MainWindow(QMainWindow):
     """
@@ -11,7 +12,7 @@ class MainWindow(QMainWindow):
         
         # Set the title and initial size of the window
         self.setWindowTitle("CSV-Editor")
-        self.setGeometry(100, 100, 500, 300)
+        self.setGeometry(100, 100, 1000, 800)
 
         # initialize variable
         self.table_row = 0
@@ -53,13 +54,12 @@ class MainWindow(QMainWindow):
         self.editMenu.addMenu(self.insertSubMenu)
 
         # Create an instance of QTableWidget
-        self.table_widget = QTableWidget()
-        
+        self.table = BlankTableWidget()
+        # self.table.setColumnCount
         # Set the horizontal headers (column names)
         # self.table_widget.setHorizontalHeaderLabels(["Column1", "Column2", "Column3"])
 
-        # Add the table to the layout
-        layout.addWidget(self.table_widget)
+        layout.addWidget(self.table)
     
     def _enable_action(self,enable_flag):
         
@@ -82,8 +82,8 @@ class MainWindow(QMainWindow):
     def create_new_table(self,rows,columns):
 
         # This slot will be automatically called when get_dimension signal is emit
-        self.table_widget.setRowCount(rows)
-        self.table_widget.setColumnCount(columns)
+        self.table.setRowCount(rows)
+        self.table.setColumnCount(columns)
         # update current number of rows and column in the main windows
         self.table_row = rows
         self.table_column = columns
@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
 
         if result == QDialog.Accepted:
             headers = dialog.getHeaders()
-            self.table_widget.setHorizontalHeaderLabels(headers)
+            self.table.setHorizontalHeaderLabels(headers)
             QMessageBox.information(self,"Headers Entered","Successfully set headers")
         else:
             QMessageBox.information(self, "Cancelled","Header input cancelled")

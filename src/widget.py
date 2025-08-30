@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QTableWidget, QMenu, QAction
+from PyQt5.QtWidgets import QTableWidget, QMenu, QAction,QDialog,QMessageBox
 from PyQt5.QtCore import Qt
+from dialog import sectionHeaderEditorDialog
 
 class BlankTableWidget(QTableWidget):
     def __init__(self):
@@ -10,6 +11,7 @@ class BlankTableWidget(QTableWidget):
         # Enable a custom context menu
         self.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.horizontalHeader().customContextMenuRequested.connect(self._show_context_menu_column)
+        self.horizontalHeader().sectionDoubleClicked.connect(self._edit_section_header)
         self.verticalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
         self.verticalHeader().customContextMenuRequested.connect(self._show_context_menu_row)
     
@@ -65,6 +67,16 @@ class BlankTableWidget(QTableWidget):
     def _insert_row_below(self):
 
         self.insertRow(self.currentRow() + 1)
+    
+    def _edit_section_header(self,section_index):
+        editorDialog = sectionHeaderEditorDialog(section_index+1)
+        result = editorDialog.exec_()
+
+        if result == QDialog.Accepted:
+            # QMessageBox.information
+            header_name = editorDialog.getSectionHeaderName()
+            self.setHorizontalHeaderItem(section_index,header_name)
+
 
 
 

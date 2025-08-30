@@ -1,4 +1,4 @@
-from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog,QVBoxLayout,QFormLayout,QLineEdit, QDialogButtonBox
+from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog,QVBoxLayout,QFormLayout,QLineEdit, QDialogButtonBox,QTableWidgetItem
 from PyQt5.QtCore import Qt, QRect,pyqtSignal
 from PyQt5.QtGui import  QFont
 
@@ -91,7 +91,7 @@ class insertHorizontalHeaderDialog(QDialog):
         form_layout.setContentsMargins(20,20,20,20)
 
         for i in range(self.num_colums):
-            textLabel = QLabel(f" Column {i} Header : ")
+            textLabel = QLabel(f" Column {i+1} Header : ")
             lineEdit = QLineEdit()
             self.header_inputs.append(lineEdit)
             form_layout.addRow(textLabel,lineEdit)
@@ -109,4 +109,32 @@ class insertHorizontalHeaderDialog(QDialog):
     def getHeaders(self) -> list:
 
         return [input.text().strip() for input in self.header_inputs]
+    
+class sectionHeaderEditorDialog(QDialog):
+    def __init__(self,index:int):
+        super().__init__()
+        self.setWindowTitle(f"Edit Header Column {index}")
+        self.initUI()
+        
+    def initUI(self):
+        self.dialog_layout = QVBoxLayout(self)
+        self.form_layout = QFormLayout(self)
+        self.form_layout.setContentsMargins(20,20,20,20)
+        self.textlabel = QLabel("Header Name :",self)
+        self.line_edit = QLineEdit(self)
+
+        self.form_layout.addRow(self.textlabel,self.line_edit)
+
+        self.dialog_layout.addLayout(self.form_layout)
+
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.dialog_layout.addWidget(self.buttonBox)
+        self.setLayout(self.dialog_layout)
+    
+    def getSectionHeaderName(self) -> QTableWidgetItem:
+        value = QTableWidgetItem(self.line_edit.text().strip())
+        return value
 

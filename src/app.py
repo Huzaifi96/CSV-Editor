@@ -1,6 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox
-from dialog import createNewTableDialog, openFileDialog,insertHorizontalHeaderDialog
+import pandas as pd
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox,QTableWidgetItem,QFileDialog
+from dialog import createNewTableDialog,insertHorizontalHeaderDialog,MessageBoxDialog
 from widget import BlankTableWidget
 
 class MainWindow(QMainWindow):
@@ -40,8 +41,12 @@ class MainWindow(QMainWindow):
         openAction = QAction('Open..',self)
         openAction.triggered.connect(self.open_file_dialog)
 
+        exportAction = QAction('Export',self)
+        exportAction.triggered.connect(self.export_file_dialog)
+
         fileMenu.addAction(newAction)
         fileMenu.addAction(openAction)
+        fileMenu.addAction(exportAction)
 
         # Create Edit Menus
         self.editMenu = menuBar.addMenu('Edit')
@@ -55,9 +60,6 @@ class MainWindow(QMainWindow):
 
         # Create an instance of QTableWidget
         self.table = BlankTableWidget()
-        # self.table.setColumnCount
-        # Set the horizontal headers (column names)
-        # self.table_widget.setHorizontalHeaderLabels(["Column1", "Column2", "Column3"])
 
         layout.addWidget(self.table)
     
@@ -90,8 +92,24 @@ class MainWindow(QMainWindow):
     
     def open_file_dialog(self):
 
-        openFile = openFileDialog()
-        openFile.open_file()
+        # filename = openFileDialog.open_file()
+        filename, _ = QFileDialog.getOpenFileName(
+                                                  caption='Open File',
+                                                  directory='',
+                                                  filter='CSV Files (*.csv);;All Files (*)'
+                                                 )
+        if ".csv" in filename:
+            self.populate_table(filename)
+        else:
+            MessageBoxDialog.show_error("Error: Incorrect File Type","The file you selected is not a .csv file !")
+    
+    def export_file_dialog(self):
+        file_path, _ = QFileDialog.getSaveFileName(
+                                                    self,
+                                                    caption="Export Data",
+                                                    directory="Untitled.csv",  # Default filename
+                                                    filter="CSV Files (*.csv);;All Files (*)"  # File filter
+                                                  )
 
     def insert_horizontal_header_dialog(self):
         dialog = insertHorizontalHeaderDialog(self.table_column)
@@ -104,6 +122,45 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self,"Headers Entered","Successfully set headers")
         else:
             QMessageBox.information(self, "Cancelled","Header input cancelled")
+    
+    def populate_table(self,filename):
+
+        try:
+            data = pd.read_csv(filename)
+        except pd.errors.EmptyDataError:
+            MessageBoxDialog.show_error("Error: Empty Data","The file is empty or invalid !")
+            return
+            
+        rows,columns = data.shape
+
+        if rows == 0:
+            table_headings = list(data.columns)
+            self.set_row_column_table(rows+1,columns)
+            self.table.setHorizontalHeaderLabels(table_headings)
+        else:
+            table_headings = list(data.columns)
+            self.set_row_column_table(rows,columns)
+            self.table.setHorizontalHeaderLabels(table_headings)
+
+            for row_idx in range (0,rows):
+                for column_idx in range(0,columns):
+                    value = data.iat[row_idx,column_idx]
+                    if pd.isna(value):
+                        # handle NaN value
+                        display_value  = " "
+                    else:
+                        display_value  = str(value)
+
+                    item = QTableWidgetItem(display_value)
+                    self.table.setItem(row_idx,column_idx,item)
+
+    def set_row_column_table(self,row_count=0,column_count=0):
+        if row_count != 0:
+            self.table.setRowCount(row_count)
+            self.table_row = row_count
+        if row_count != 0:
+            self.table.setColumnCount(column_count)
+            self.table_column = column_count
 
 # The application entry point
 if __name__ == '__main__':

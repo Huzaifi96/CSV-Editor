@@ -1,4 +1,4 @@
-from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog,QVBoxLayout,QFormLayout,QLineEdit, QDialogButtonBox,QTableWidgetItem
+from  PyQt5.QtWidgets import QLabel,QPushButton,QSpinBox,QDialog,QFileDialog,QVBoxLayout,QFormLayout,QLineEdit, QDialogButtonBox,QTableWidgetItem,QMessageBox
 from PyQt5.QtCore import Qt, QRect,pyqtSignal
 from PyQt5.QtGui import  QFont
 
@@ -58,22 +58,6 @@ class createNewTableDialog(QDialog):
 
         # Close the dialog
         self.accept()
-
-class openFileDialog(QFileDialog):
-
-    def __init__(self):
-        super().__init__()
-    
-    def open_file(self):
-        filename, _ = self.getOpenFileName(parent=self,
-                                           caption='Open File',
-                                           directory='',
-                                           filter='Text Files (*.txt);;All Files (*)')
-        if filename:
-            try:
-                print(f"The file selected is {filename}")
-            except Exception as e:
-                print(f"Error opening file: {e}")
 
 class insertHorizontalHeaderDialog(QDialog):
 
@@ -138,3 +122,26 @@ class sectionHeaderEditorDialog(QDialog):
         value = QTableWidgetItem(self.line_edit.text().strip())
         return value
 
+class MessageBoxDialog():
+
+    @staticmethod
+    def show_info(info_type:str,info_message:str):
+        """Shows a information message box."""
+        msg = QMessageBox()  # Create an instance inside the method
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle(info_type)
+        msg.setText(info_message)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setContentsMargins(20, 20, 20, 20)
+        msg.exec_()
+
+    @staticmethod
+    def show_error(err_type:str,err_message:str):
+        """Shows a critical error message box."""
+        msg = QMessageBox()  # Create an instance inside the method
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(err_type)
+        msg.setText(err_message)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setContentsMargins(20, 20, 20, 20)
+        msg.exec_()   

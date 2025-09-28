@@ -110,6 +110,7 @@ class MainWindow(QMainWindow):
                                                     directory="Untitled.csv",  # Default filename
                                                     filter="CSV Files (*.csv);;All Files (*)"  # File filter
                                                   )
+        self.export_data(file_path)
 
     def insert_horizontal_header_dialog(self):
         dialog = insertHorizontalHeaderDialog(self.table_column)
@@ -161,6 +162,9 @@ class MainWindow(QMainWindow):
         if row_count != 0:
             self.table.setColumnCount(column_count)
             self.table_column = column_count
+    
+    def export_data(self,filepath:str):
+        self.table.exportData(filepath)
 
 # The application entry point
 if __name__ == '__main__':

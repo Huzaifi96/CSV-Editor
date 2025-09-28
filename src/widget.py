@@ -76,6 +76,56 @@ class BlankTableWidget(QTableWidget):
             # QMessageBox.information
             header_name = editorDialog.getSectionHeaderName()
             self.setHorizontalHeaderItem(section_index,header_name)
+    
+    def _compile_data(self) -> list:
+        rows = self.rowCount()
+        columns = self.columnCount()
+        table_matrix = []
+        row_matrix = []
+       
+        horizontal_headers = self.get_header_list()
+        table_matrix.append(horizontal_headers)
+
+        for row_idx in range(0,rows):
+            for column_idx in range(0,columns):
+                cellItem = self.item(row_idx,column_idx)
+                if cellItem is None:
+                    row_matrix.append("")
+                else:
+                    row_matrix.append(cellItem.text())
+            
+            table_matrix.append(row_matrix)
+            row_matrix = []
+
+        return table_matrix
+
+    def get_header_list(self)-> list:
+        columns = self.columnCount()
+        horizontal_headers = []
+        for i in range(0,columns):
+            item = self.horizontalHeaderItem(i)
+            if item is None:
+                horizontal_headers.append("")
+            else:
+                horizontal_headers.append(item.text())
+        return horizontal_headers
+
+    def exportData(self,file_path:str):
+        data = self._compile_data()
+        rows = self.rowCount() + 1
+        columns = self.columnCount()
+        row_list = []
+
+        with open(file_path,'w') as file:
+            for row_idx in range(0,rows):
+                for column_idx in range(0,columns):
+                    if column_idx != columns-1:
+                        row_list.append(str(data[row_idx][column_idx]) + ",")
+                    else:
+                        row_list.append(str(data[row_idx][column_idx]) + "\n")
+                rowStr = "".join(row_list)
+                row_list.clear()
+                file.write(rowStr)
 
 
 

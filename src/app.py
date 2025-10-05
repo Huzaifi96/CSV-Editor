@@ -1,8 +1,11 @@
 import sys
 import pandas as pd
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox,QTableWidgetItem,QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QAction,QMenu, QDialog,QMessageBox,QTableWidgetItem,QFileDialog,QToolBar
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon
 from dialog import createNewTableDialog,insertHorizontalHeaderDialog,MessageBoxDialog
 from widget import BlankTableWidget
+from helper import getImgSource
 
 class MainWindow(QMainWindow):
     """
@@ -29,24 +32,25 @@ class MainWindow(QMainWindow):
 
         # Create a layout for the central widget
         layout = QVBoxLayout(central_widget)
-        
+
         menuBar = self.menuBar()
 
         # Create File Menus
         fileMenu = menuBar.addMenu('File')
 
-        newAction = QAction('New', self)
-        newAction.triggered.connect(self.open_create_new_table_dialog)
+        self.newAction = QAction('New', self)
+        self.newAction.triggered.connect(self.open_create_new_table_dialog)
+        
+        self.openAction = QAction('Open..',self)
+        self.openAction.triggered.connect(self.open_file_dialog)
 
-        openAction = QAction('Open..',self)
-        openAction.triggered.connect(self.open_file_dialog)
+        self.exportAction = QAction('Export',self)
+        self.exportAction.setEnabled(self._table_exists)
+        self.exportAction.triggered.connect(self.export_file_dialog)
 
-        exportAction = QAction('Export',self)
-        exportAction.triggered.connect(self.export_file_dialog)
-
-        fileMenu.addAction(newAction)
-        fileMenu.addAction(openAction)
-        fileMenu.addAction(exportAction)
+        fileMenu.addAction(self.newAction)
+        fileMenu.addAction(self.openAction)
+        fileMenu.addAction(self.exportAction)
 
         # Create Edit Menus
         self.editMenu = menuBar.addMenu('Edit')
@@ -58,14 +62,44 @@ class MainWindow(QMainWindow):
         self.insertSubMenu.addAction(self.horizontalHeader)
         self.editMenu.addMenu(self.insertSubMenu)
 
+        toolbar = QToolBar()
+        self.addToolBar(toolbar)
+        toolbar.setIconSize(QSize(50, 50))
+
+        self.import_toolbar = QAction(QIcon(getImgSource("import.png")), "Import File", self)
+        self.import_toolbar.triggered.connect(self.open_file_dialog)
+
+        self.export_toolbar = QAction(QIcon(getImgSource("export.png")), "Export File", self)
+        self.export_toolbar.setEnabled(self._table_exists)
+        self.export_toolbar.triggered.connect(self.export_file_dialog)
+
+        self.create_toolbar = QAction(QIcon(getImgSource("add-table.png")), "Create new table", self)
+        self.create_toolbar.triggered.connect(self.open_create_new_table_dialog)
+
+        self.delete_toolbar = QAction(QIcon(getImgSource("delete-table.png")), "Delete table", self)
+        self.delete_toolbar.setEnabled(self._table_exists)
+
+        self.save_toolbar = QAction(QIcon(getImgSource("save_icon.png")), "Save", self)
+        self.save_toolbar.setEnabled(self._table_exists)
+
+        toolbar.addAction(self.create_toolbar)
+        toolbar.addAction(self.delete_toolbar)
+        toolbar.addAction(self.save_toolbar)
+        toolbar.addAction(self.import_toolbar)
+        toolbar.addAction(self.export_toolbar)
+        toolbar.addSeparator()
         # Create an instance of QTableWidget
         self.table = BlankTableWidget()
 
         layout.addWidget(self.table)
     
-    def _enable_action(self,enable_flag):
+    def enable_action(self,enable_flag):
         
         self.horizontalHeader.setEnabled(enable_flag)
+        self.exportAction.setEnabled(enable_flag)
+        self.export_toolbar.setEnabled(enable_flag)
+        self.delete_toolbar.setEnabled(enable_flag)
+        self.save_toolbar.setEnabled(enable_flag)
 
     def open_create_new_table_dialog(self):
         # create instance of createNewTableDialog
@@ -75,11 +109,12 @@ class MainWindow(QMainWindow):
         self.createTable_window.get_dimension.connect(self.create_new_table)
 
         # Show the dialog as a modal window. This will block execution until it's closed.
-        self.createTable_window.exec_()
+        response = self.createTable_window.exec_()
 
+        if response == QDialog.Accepted:
         # enable table exist flags and action menus
-        self._table_exists = True
-        self._enable_action(self._table_exists)
+            self._table_exists = True
+            self.enable_action(self._table_exists)
 
     def create_new_table(self,rows,columns):
 
@@ -100,6 +135,8 @@ class MainWindow(QMainWindow):
                                                  )
         if ".csv" in filename:
             self.populate_table(filename)
+        elif filename == '':
+            pass
         else:
             MessageBoxDialog.show_error("Error: Incorrect File Type","The file you selected is not a .csv file !")
     
@@ -110,7 +147,8 @@ class MainWindow(QMainWindow):
                                                     directory="Untitled.csv",  # Default filename
                                                     filter="CSV Files (*.csv);;All Files (*)"  # File filter
                                                   )
-        self.export_data(file_path)
+        if file_path != '':
+            self.export_data(file_path)
 
     def insert_horizontal_header_dialog(self):
         dialog = insertHorizontalHeaderDialog(self.table_column)

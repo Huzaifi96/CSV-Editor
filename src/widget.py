@@ -21,12 +21,15 @@ class BlankTableWidget(QTableWidget):
         
         insert_column_right = QAction("Insert Column Right", self)
         insert_column_left  = QAction("Insert Column Left", self)
+        delete_column       = QAction("Delete Column", self)
 
         insert_column_right.triggered.connect(self._insert_column_right)
         insert_column_left.triggered.connect(self._insert_column_left)
+        delete_column.triggered.connect(self._delete_column)
 
         menu.addAction(insert_column_right)
         menu.addAction(insert_column_left)
+        menu.addAction(delete_column)
         
         # Determine where to show the menu
         menu.exec_(self.viewport().mapToGlobal(pos))
@@ -37,12 +40,15 @@ class BlankTableWidget(QTableWidget):
         
         insert_row_above = QAction("Insert Row Above", self)
         insert_row_below = QAction("Insert Row Below", self)
+        delete_row       = QAction("Delete Row", self)
 
         insert_row_above.triggered.connect(self._insert_row_above)
         insert_row_below.triggered.connect(self._insert_row_below)
+        delete_row.triggered.connect(self._delete_row)
 
         menu.addAction(insert_row_above)
         menu.addAction(insert_row_below)
+        menu.addAction(delete_row)
 
         menu.exec_(self.viewport().mapToGlobal(pos))
     
@@ -57,6 +63,10 @@ class BlankTableWidget(QTableWidget):
         else:
             self.insertColumn(self.currentColumn() - 1)
 
+    def _delete_column(self):
+
+        self.removeColumn(self.currentColumn())
+
     def _insert_row_above(self):
 
         if self.currentRow() == 0:
@@ -67,6 +77,11 @@ class BlankTableWidget(QTableWidget):
     def _insert_row_below(self):
 
         self.insertRow(self.currentRow() + 1)
+    
+    def _delete_row(self):
+
+        # self.insertRow(self.currentRow() + 1)
+        self.removeRow(self.currentRow())
     
     def _edit_section_header(self,section_index):
         editorDialog = sectionHeaderEditorDialog(section_index+1)
